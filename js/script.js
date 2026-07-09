@@ -47,6 +47,32 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
+// Force resume PDF download instead of browser preview
+const resumeDownload = document.getElementById('resume-download');
+if (resumeDownload) {
+    resumeDownload.addEventListener('click', async (e) => {
+        e.preventDefault();
+
+        const fileUrl = new URL(resumeDownload.getAttribute('href'), window.location.href).href;
+        const response = await fetch(fileUrl);
+        if (!response.ok) {
+            console.error('Unable to fetch resume PDF:', response.status);
+            window.location.href = fileUrl;
+            return;
+        }
+
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const tempLink = document.createElement('a');
+        tempLink.href = objectUrl;
+        tempLink.download = resumeDownload.getAttribute('download') || 'resume.pdf';
+        document.body.appendChild(tempLink);
+        tempLink.click();
+        tempLink.remove();
+        URL.revokeObjectURL(objectUrl);
+    });
+}
+
 // Sticky Navbar
 window.addEventListener('scroll', () => {
     const navbar = document.getElementById('navbar');
